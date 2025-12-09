@@ -26,8 +26,8 @@ RUN cd frontend && npm run build
 COPY src ./src
 RUN mvn clean package -DskipTests -DskipFrontendBuild=true
 
-# Runtime stage
-FROM eclipse-temurin:17-jre-alpine
+# Runtime stage (Debian-based for multi-arch, incl. ARM)
+FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
