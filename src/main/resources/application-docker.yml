@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/${POSTGRES_DB:shareline}
+    username: ${POSTGRES_USER:shareline}
+    password: ${POSTGRES_PASSWORD:shareline}
+
+shareline:
+  upload-dir: /app/uploads
+  base-url: http://localhost:8080
+
