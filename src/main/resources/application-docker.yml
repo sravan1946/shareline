@@ -4,7 +4,11 @@ spring:
     username: ${POSTGRES_USER:shareline}
     password: ${POSTGRES_PASSWORD:shareline}
 
+server:
+  forward-headers-strategy: framework
+  use-forward-headers: true
+
 shareline:
   upload-dir: /app/uploads
-  base-url: http://localhost:8080
+  base-url: ${SHARELINE_BASE_URL:http://localhost:8080}
 

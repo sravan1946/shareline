@@ -65,9 +65,16 @@ public class SecurityConfig {
             )
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
-                .logoutSuccessUrl("/")
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    // Clear session and cookies
+                    request.getSession().invalidate();
+                    response.setStatus(200);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\":\"Logged out successfully\"}");
+                })
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
+                .clearAuthentication(true)
             );
 
         return http.build();

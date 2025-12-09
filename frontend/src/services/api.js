@@ -20,7 +20,11 @@ export const checkAuth = async () => {
 }
 
 export const logout = async () => {
-  await api.post('/auth/logout')
+  try {
+    await api.post('/auth/logout')
+  } catch (error) {
+    console.log('Logout request completed (may have failed if already logged out)')
+  }
 }
 
 export const uploadFile = async (file) => {

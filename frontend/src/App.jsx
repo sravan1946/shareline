@@ -94,10 +94,18 @@ function App() {
   }, []) // Empty deps - only run on mount
 
   const handleLogout = () => {
-    logout().then(() => {
-      setUser(null)
-      window.location.href = '/'
-    })
+    logout()
+      .then(() => {
+        setUser(null)
+        // Use replace to avoid adding to history and preserve protocol
+        window.location.replace(window.location.origin + '/')
+      })
+      .catch((error) => {
+        console.error('Logout error:', error)
+        // Even if logout fails, clear local state and redirect
+        setUser(null)
+        window.location.replace(window.location.origin + '/')
+      })
   }
 
   const handleShare = (file) => {

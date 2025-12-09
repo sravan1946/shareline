@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,6 +30,13 @@ public class AuthController {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "ok");
         response.put("message", "API is accessible");
+        return response;
+    }
+
+    @PostMapping("/logout")
+    public Map<String, String> logout() {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Logged out successfully");
         return response;
     }
 
