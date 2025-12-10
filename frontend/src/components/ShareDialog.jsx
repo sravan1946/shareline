@@ -10,7 +10,7 @@ function ShareDialog({ file, onClose }) {
 
   useEffect(() => {
     if (file.shareToken) {
-      setShareUrl(`${window.location.origin}/api/share/${file.shareToken}`)
+      setShareUrl(`${window.location.origin}/share/${file.shareToken}`)
     }
   }, [file])
 
@@ -45,7 +45,6 @@ function ShareDialog({ file, onClose }) {
   const handleCopy = () => {
     if (shareUrl) {
       navigator.clipboard.writeText(shareUrl)
-      alert('Link copied to clipboard!')
     }
   }
 

@@ -6,6 +6,7 @@ import com.shareline.entity.User;
 import com.shareline.repository.UserRepository;
 import com.shareline.service.FileService;
 import com.shareline.service.ShareService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -43,7 +45,8 @@ public class ShareController {
     public ResponseEntity<Map<String, String>> createShareLink(
             @PathVariable Long id,
             @RequestBody(required = false) ShareRequest request,
-            @AuthenticationPrincipal OAuth2User principal) {
+            @AuthenticationPrincipal OAuth2User principal,
+            HttpServletRequest httpRequest) {
         
         User user = getCurrentUser(principal);
         Integer expirationDays = request != null ? request.getExpirationDays() : null;
@@ -51,7 +54,7 @@ public class ShareController {
         
         Map<String, String> response = new HashMap<>();
         response.put("shareToken", shareToken);
-        response.put("shareUrl", baseUrl + "/share/" + shareToken);
+        response.put("shareUrl", resolveBaseUrl(httpRequest) + "/share/" + shareToken);
         return ResponseEntity.ok(response);
     }
 
@@ -88,6 +91,36 @@ public class ShareController {
         info.put("shareExpiresAt", file.getShareExpiresAt());
         
         return ResponseEntity.ok(info);
+    }
+
+    private String resolveBaseUrl(HttpServletRequest request) {
+        try {
+            // Respect forwarded headers when behind a proxy/load balancer
+            String forwardedHost = request.getHeader("X-Forwarded-Host");
+            String forwardedProto = request.getHeader("X-Forwarded-Proto");
+            String forwardedPort = request.getHeader("X-Forwarded-Port");
+
+            if (forwardedHost != null && !forwardedHost.isBlank()) {
+                String scheme = (forwardedProto != null && !forwardedProto.isBlank())
+                        ? forwardedProto
+                        : request.getScheme();
+                String port = "";
+                if (forwardedPort != null && !forwardedPort.isBlank()
+                        && !forwardedPort.equals("80") && !forwardedPort.equals("443")) {
+                    port = ":" + forwardedPort;
+                }
+                return scheme + "://" + forwardedHost + port;
+            }
+
+            String dynamicBase = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .scheme(request.getScheme())
+                    .build()
+                    .toUriString();
+
+            return dynamicBase != null && !dynamicBase.isBlank() ? dynamicBase : baseUrl;
+        } catch (Exception ex) {
+            return baseUrl;
+        }
     }
 
     private User getCurrentUser(OAuth2User principal) {
