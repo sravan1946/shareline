@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { getFiles, deleteFile, downloadFile } from '../services/api'
 import './FileList.css'
 
@@ -7,6 +7,7 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const selfManaged = externalFiles === undefined
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
     if (selfManaged) {
@@ -72,6 +73,22 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
   const displayLoading = selfManaged ? loading : externalLoading
   const displayError = selfManaged ? error : externalError
 
+  const filteredFiles = useMemo(() => {
+    if (!query.trim()) return displayFiles
+    const lower = query.toLowerCase()
+    return displayFiles.filter((f) => f.originalFilename?.toLowerCase().includes(lower))
+  }, [displayFiles, query])
+
+  const stats = useMemo(() => {
+    const totalSize = displayFiles.reduce((sum, f) => sum + (f.fileSize || 0), 0)
+    const shared = displayFiles.filter((f) => f.shareable).length
+    return {
+      count: displayFiles.length,
+      sizeLabel: formatFileSize(totalSize),
+      shared,
+    }
+  }, [displayFiles])
+
   if (displayLoading) {
     return (
       <div className="file-list-loading">
@@ -95,9 +112,43 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
 
   return (
     <div className="file-list-container">
-      <h2>Your Files</h2>
+      <div className="file-list-top">
+        <div>
+          <p className="eyebrow">Your files</p>
+          <h2>Manage and share</h2>
+        </div>
+        <div className="top-actions">
+          <button className="ghost-button" onClick={onRefresh || loadFiles}>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div className="file-stats">
+        <div className="stat-chip">
+          <span className="stat-chip-label">Files</span>
+          <strong>{stats.count}</strong>
+        </div>
+        <div className="stat-chip">
+          <span className="stat-chip-label">Storage</span>
+          <strong>{stats.sizeLabel}</strong>
+        </div>
+        <div className="stat-chip">
+          <span className="stat-chip-label">Shared</span>
+          <strong>{stats.shared}</strong>
+        </div>
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Search filename..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
       <div className="file-list">
-        {displayFiles.map((file) => (
+        {filteredFiles.map((file) => (
           <div key={file.id} className="file-item">
             <div className="file-info">
               <div className="file-name">{file.originalFilename}</div>
@@ -138,6 +189,11 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
             </div>
           </div>
         ))}
+        {filteredFiles.length === 0 && (
+          <div className="file-list-empty">
+            <p>No files match that search.</p>
+          </div>
+        )}
       </div>
     </div>
   )
