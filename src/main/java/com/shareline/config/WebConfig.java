@@ -24,6 +24,10 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/").setViewName("forward:/index.html");
+        // Forward SPA client routes (avoid api/static/assets and file extensions)
+        registry.addViewController("/share/{token:[\\w-]+}").setViewName("forward:/index.html");
+        registry.addViewController("/{path:^(?!api|assets|static|.*\\..*$).*$}")
+                .setViewName("forward:/index.html");
     }
 }
 
