@@ -8,6 +8,7 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
   const [error, setError] = useState(null)
   const selfManaged = externalFiles === undefined
   const [query, setQuery] = useState('')
+  const [pendingDelete, setPendingDelete] = useState(null)
 
   useEffect(() => {
     if (selfManaged) {
@@ -29,17 +30,21 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
   }
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this file?')) {
-      try {
-        await deleteFile(id)
-        if (selfManaged) {
-          loadFiles()
-        } else if (onRefresh) {
-          onRefresh()
-        }
-      } catch (err) {
-        alert('Failed to delete file')
+    if (pendingDelete !== id) {
+      setPendingDelete(id)
+      return
+    }
+    try {
+      await deleteFile(id)
+      setPendingDelete(null)
+      if (selfManaged) {
+        loadFiles()
+      } else if (onRefresh) {
+        onRefresh()
       }
+    } catch (err) {
+      setError('Failed to delete file')
+      setPendingDelete(null)
     }
   }
 
@@ -167,25 +172,33 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
             <div className="file-actions">
               <button
                 onClick={() => handleDownload(file.id, file.originalFilename)}
-                className="btn-download"
+                className="chip-btn solid"
                 title="Download"
               >
-                ⬇
+                <span className="icon">⬇</span> Download
               </button>
               <button
                 onClick={() => onShare(file)}
-                className="btn-share"
+                className="chip-btn ghost"
                 title="Share"
               >
-                🔗
+                <span className="icon">🔗</span> Share
               </button>
-              <button
-                onClick={() => handleDelete(file.id)}
-                className="btn-delete"
-                title="Delete"
-              >
-                🗑
-              </button>
+              <div className="delete-wrap">
+                <button
+                  onClick={() => handleDelete(file.id)}
+                  className={`chip-btn danger ${pendingDelete === file.id ? 'confirm' : ''}`}
+                  title={pendingDelete === file.id ? 'Click again to confirm' : 'Delete'}
+                >
+                  <span className="icon">🗑</span>
+                  {pendingDelete === file.id ? 'Confirm' : 'Delete'}
+                </button>
+                {pendingDelete === file.id && (
+                  <button className="text-cancel" onClick={() => setPendingDelete(null)}>
+                    Cancel
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}
