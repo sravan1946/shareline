@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import Login from './components/Login'
 import FileUpload from './components/FileUpload'
 import FileList from './components/FileList'
 import ShareDialog from './components/ShareDialog'
 import PublicFileView from './components/PublicFileView'
-import { checkAuth, logout } from './services/api'
+import DashboardHome from './components/DashboardHome'
+import { checkAuth, logout, getFiles } from './services/api'
 import './styles/App.css'
 
 function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [files, setFiles] = useState([])
+  const [filesLoading, setFilesLoading] = useState(true)
+  const [filesError, setFilesError] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
   const [showShareDialog, setShowShareDialog] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const checkAuthentication = async () => {
     try {
@@ -38,6 +44,21 @@ function App() {
       setUser(null)
       setLoading(false)
       return false
+    }
+  }
+
+  const loadFiles = async () => {
+    if (!user) return
+    try {
+      setFilesLoading(true)
+      const data = await getFiles()
+      setFiles(data)
+      setFilesError(null)
+    } catch (err) {
+      console.error('Failed to load files', err)
+      setFilesError('Failed to load files')
+    } finally {
+      setFilesLoading(false)
     }
   }
 
@@ -93,6 +114,12 @@ function App() {
     }
   }, []) // Empty deps - only run on mount
 
+  useEffect(() => {
+    if (user) {
+      loadFiles()
+    }
+  }, [user])
+
   const handleLogout = () => {
     logout()
       .then(() => {
@@ -113,10 +140,23 @@ function App() {
     setShowShareDialog(true)
   }
 
+  const handleUploadSuccess = () => {
+    loadFiles()
+    navigate('/files')
+  }
+
   const handleCloseShareDialog = () => {
     setShowShareDialog(false)
     setSelectedFile(null)
   }
+
+  const sidebarLinks = [
+    { to: '/home', label: 'Home' },
+    { to: '/uploads', label: 'Uploads' },
+    { to: '/files', label: 'Files' },
+  ]
+
+  const currentPath = location.pathname
 
   if (loading) {
     return (
@@ -135,25 +175,103 @@ function App() {
           path="/*"
           element={
             user ? (
-              <div className="app-container">
-                <header className="app-header">
-                  <h1>Shareline</h1>
-                  <div className="user-info">
-                    <span>{user.name}</span>
-                    <button onClick={handleLogout} className="btn-logout">
-                      Logout
-                    </button>
+              <div className="app-shell">
+                <aside className="sidebar">
+                  <div className="brand">
+                    <span className="brand-dot" /> Shareline
                   </div>
-                </header>
-                <main className="app-main">
-                  <FileUpload onUploadSuccess={() => window.location.reload()} />
-                  <FileList user={user} onShare={handleShare} />
-                </main>
+                  <nav className="nav">
+                    {sidebarLinks.map((link) => (
+                      <NavLink
+                        key={link.to}
+                        to={link.to}
+                        className={({ isActive }) =>
+                          `nav-link ${isActive ? 'active' : ''}`
+                        }
+                      >
+                        {link.label}
+                      </NavLink>
+                    ))}
+                  </nav>
+                  <div className="sidebar-footer">
+                    <div className="user-chip">
+                      <div className="avatar">{user?.name?.[0] || 'U'}</div>
+                      <div className="user-chip-meta">
+                        <div className="user-name">{user?.name}</div>
+                        <button className="text-button" onClick={handleLogout}>
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </aside>
+                <div className="main-area">
+                  <header className="topbar">
+                    <div>
+                      <p className="eyebrow">Shareline</p>
+                      <h1 className="page-title">
+                        {currentPath.includes('uploads')
+                          ? 'Uploads'
+                          : currentPath.includes('files')
+                          ? 'Files'
+                          : 'Home'}
+                      </h1>
+                    </div>
+                    <button className="primary-button" onClick={() => navigate('/uploads')}>
+                      New Upload
+                    </button>
+                  </header>
+                  <div className="page-content">
+                    <Routes>
+                      <Route
+                        path="/home"
+                        element={
+                          <DashboardHome
+                            user={user}
+                            files={files}
+                            loading={filesLoading}
+                            error={filesError}
+                            onRefresh={loadFiles}
+                            onUploadClick={() => navigate('/uploads')}
+                          />
+                        }
+                      />
+                      <Route
+                        path="/uploads"
+                        element={
+                          <div className="panel">
+                            <div className="panel-header">
+                              <div>
+                                <p className="eyebrow">Upload</p>
+                                <h2>Drop files to share</h2>
+                              </div>
+                              <button className="ghost-button" onClick={loadFiles}>
+                                Refresh
+                              </button>
+                            </div>
+                            <FileUpload onUploadSuccess={handleUploadSuccess} />
+                          </div>
+                        }
+                      />
+                      <Route
+                        path="/files"
+                        element={
+                          <FileList
+                            user={user}
+                            files={files}
+                            loading={filesLoading}
+                            error={filesError}
+                            onShare={handleShare}
+                            onRefresh={loadFiles}
+                          />
+                        }
+                      />
+                      <Route path="*" element={<Navigate to="/home" replace />} />
+                    </Routes>
+                  </div>
+                </div>
                 {showShareDialog && selectedFile && (
-                  <ShareDialog
-                    file={selectedFile}
-                    onClose={handleCloseShareDialog}
-                  />
+                  <ShareDialog file={selectedFile} onClose={handleCloseShareDialog} />
                 )}
               </div>
             ) : (

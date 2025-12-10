@@ -2,14 +2,17 @@ import React, { useState, useEffect } from 'react'
 import { getFiles, deleteFile, downloadFile } from '../services/api'
 import './FileList.css'
 
-function FileList({ user, onShare }) {
+function FileList({ user, onShare, files: externalFiles, loading: externalLoading, error: externalError, onRefresh }) {
   const [files, setFiles] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const selfManaged = externalFiles === undefined
 
   useEffect(() => {
-    loadFiles()
-  }, [])
+    if (selfManaged) {
+      loadFiles()
+    }
+  }, [selfManaged])
 
   const loadFiles = async () => {
     try {
@@ -28,7 +31,11 @@ function FileList({ user, onShare }) {
     if (window.confirm('Are you sure you want to delete this file?')) {
       try {
         await deleteFile(id)
-        loadFiles()
+        if (selfManaged) {
+          loadFiles()
+        } else if (onRefresh) {
+          onRefresh()
+        }
       } catch (err) {
         alert('Failed to delete file')
       }
@@ -61,7 +68,11 @@ function FileList({ user, onShare }) {
     })
   }
 
-  if (loading) {
+  const displayFiles = selfManaged ? files : externalFiles || []
+  const displayLoading = selfManaged ? loading : externalLoading
+  const displayError = selfManaged ? error : externalError
+
+  if (displayLoading) {
     return (
       <div className="file-list-loading">
         <div className="spinner"></div>
@@ -70,14 +81,14 @@ function FileList({ user, onShare }) {
     )
   }
 
-  if (error) {
-    return <div className="error-message">{error}</div>
+  if (displayError) {
+    return <div className="error-message">{displayError}</div>
   }
 
-  if (files.length === 0) {
+  if (displayFiles.length === 0) {
     return (
       <div className="file-list-empty">
-        <p>No files uploaded yet. Upload your first file above!</p>
+        <p>No files uploaded yet. Upload your first file to get started.</p>
       </div>
     )
   }
@@ -86,7 +97,7 @@ function FileList({ user, onShare }) {
     <div className="file-list-container">
       <h2>Your Files</h2>
       <div className="file-list">
-        {files.map((file) => (
+        {displayFiles.map((file) => (
           <div key={file.id} className="file-item">
             <div className="file-info">
               <div className="file-name">{file.originalFilename}</div>
