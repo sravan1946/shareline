@@ -240,6 +240,8 @@ docker compose pull
 docker compose up -d
 ```
 
+The published image is built for both `linux/amd64` and `linux/arm64/v8`.
+
 **Local Development:**
 Use `docker-compose.dev.yml` which builds from the Dockerfile:
 
