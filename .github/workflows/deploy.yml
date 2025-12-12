@@ -49,8 +49,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=shareline
+          cache-to: type=gha,mode=max,scope=shareline
+          provenance: false
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3

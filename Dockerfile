@@ -10,21 +10,25 @@ WORKDIR /app
 # Copy pom.xml first (for better layer caching)
 # Dependencies are only re-downloaded if pom.xml changes
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
+RUN --mount=type=cache,target=/root/.m2/repository \
+    mvn dependency:go-offline -Dmaven.repo.local=/root/.m2/repository -B
 
-# Copy frontend package.json first for better npm caching
-# npm install only runs if package.json changes
-COPY frontend/package.json ./frontend/
-RUN cd frontend && npm install
+# Copy frontend package metadata first for better npm caching
+# npm install only runs if package metadata changes
+COPY frontend/package*.json ./frontend/
+RUN --mount=type=cache,target=/root/.npm \
+    cd frontend && npm install --prefer-offline --no-fund
 
 # Copy remaining frontend files and build
 COPY frontend ./frontend
-RUN cd frontend && npm run build
+RUN --mount=type=cache,target=/root/.npm \
+    cd frontend && npm install --prefer-offline --no-fund && npm run build
 
 # Copy source code and build Java application
 # Skip frontend build since we already built it with npm
 COPY src ./src
-RUN mvn clean package -DskipTests -DskipFrontendBuild=true
+RUN --mount=type=cache,target=/root/.m2/repository \
+    mvn clean package -DskipTests -DskipFrontendBuild=true -Dmaven.repo.local=/root/.m2/repository
 
 # Runtime stage (Debian-based for multi-arch, incl. ARM)
 FROM eclipse-temurin:17-jre
