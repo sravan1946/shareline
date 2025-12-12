@@ -60,12 +60,14 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            # Navigate to project directory
-            DEPLOY_PATH="${VPS_DEPLOY_PATH:-${HOME}/shareline}"
-            cd "$DEPLOY_PATH"
-            
-            # Pull latest image and restart containers
-            docker-compose pull
-            docker-compose down
-            docker-compose up -d
+            # Run in a POSIX shell so it works whether the login shell is bash or fish
+            /bin/sh -lc '
+              DEPLOY_PATH="${VPS_DEPLOY_PATH:-$HOME/shareline}"
+              cd "$DEPLOY_PATH" || exit 1
+
+              # Pull latest image and restart containers
+              docker compose pull
+              docker compose down
+              docker compose up -d
+            '
 

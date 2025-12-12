@@ -58,19 +58,19 @@ POSTGRES_PASSWORD=your-secure-password
 **For Production (uses pre-built image from GitHub Container Registry):**
 ```bash
 # Start all services
-docker-compose up -d
+docker compose up -d
 
 # Or pull latest and start
-docker-compose pull && docker-compose up -d
+docker compose pull && docker compose up -d
 ```
 
 **For Local Development (builds from Dockerfile):**
 ```bash
 # Build and start all services
-docker-compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.dev.yml up --build
 
 # Or run in detached mode
-docker-compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml up -d --build
 ```
 
 The application will be available at `http://localhost:8080`
@@ -189,15 +189,15 @@ In Docker, the application connects to PostgreSQL using the service name `postgr
 
 ### Database Connection Issues
 
-- Verify PostgreSQL container is running: `docker-compose ps`
-- Check database logs: `docker-compose logs postgres`
+- Verify PostgreSQL container is running: `docker compose ps`
+- Check database logs: `docker compose logs postgres`
 - Ensure environment variables are set correctly
 
 ### File Upload Fails
 
 - Check file size (max 100MB)
 - Verify upload directory has write permissions
-- Check application logs: `docker-compose logs app`
+- Check application logs: `docker compose logs app`
 
 ## CI/CD Deployment
 
@@ -236,15 +236,15 @@ This project includes a GitHub Actions workflow for automatic deployment to a VP
 The default `docker-compose.yml` is configured for production and pulls from GitHub Container Registry:
 
 ```bash
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
 ```
 
 **Local Development:**
 Use `docker-compose.dev.yml` which builds from the Dockerfile:
 
 ```bash
-docker-compose -f docker-compose.dev.yml up --build -d
+docker compose -f docker-compose.dev.yml up --build -d
 ```
 
 ## License
