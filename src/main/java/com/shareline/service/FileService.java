@@ -13,9 +13,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.net.URLConnection;
 
 @Service
 public class FileService {
@@ -33,12 +35,14 @@ public class FileService {
         String storedFilePath = fileStorageService.storeFile(multipartFile, user.getId());
         Path filePath = fileStorageService.loadFile(storedFilePath);
 
+        String mimeType = determineMimeType(multipartFile, filePath);
+
         File file = new File();
         file.setFilename(storedFilePath); // Now stores: userId/filename
         file.setOriginalFilename(multipartFile.getOriginalFilename());
         file.setFilePath(filePath.toString());
         file.setFileSize(multipartFile.getSize());
-        file.setMimeType(multipartFile.getContentType());
+        file.setMimeType(mimeType);
         file.setUser(user);
 
         File savedFile = fileRepository.save(file);
@@ -101,6 +105,32 @@ public class FileService {
                 file.getCreatedAt(),
                 file.isShareable()
         );
+    }
+
+    /**
+     * Try multiple strategies to determine MIME type:
+     * 1) Client-provided content type (if present)
+     * 2) Probe using the stored file path (based on file contents / extension)
+     * 3) Guess from original filename
+     * Falls back to application/octet-stream.
+     */
+    private String determineMimeType(MultipartFile multipartFile, Path filePath) {
+        String clientType = multipartFile.getContentType();
+        if (clientType != null && !clientType.isBlank()) {
+            return clientType;
+        }
+
+        try {
+            String probed = Files.probeContentType(filePath);
+            if (probed != null && !probed.isBlank()) {
+                return probed;
+            }
+        } catch (IOException ignored) {
+            // fall through to next strategy
+        }
+
+        String guessed = URLConnection.guessContentTypeFromName(multipartFile.getOriginalFilename());
+        return (guessed != null && !guessed.isBlank()) ? guessed : "application/octet-stream";
     }
 }
 

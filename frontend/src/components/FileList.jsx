@@ -76,6 +76,25 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
     })
   }
 
+  const getExtension = (name = '') => {
+    const lastDot = name.lastIndexOf('.')
+    if (lastDot === -1) return ''
+    return name.slice(lastDot + 1).toLowerCase()
+  }
+
+  const getTypeLabel = (file) => {
+    const mt = file.mimeType || ''
+    if (!mt) return 'Unknown type'
+    if (mt.startsWith('image/')) return 'Image'
+    if (mt.startsWith('video/')) return 'Video'
+    if (mt.startsWith('audio/')) return 'Audio'
+    if (mt === 'application/pdf') return 'PDF'
+    if (mt.startsWith('text/')) return 'Text'
+    if (mt.includes('zip') || mt.includes('compressed')) return 'Archive'
+    if (mt.includes('json')) return 'JSON'
+    return mt
+  }
+
   const displayFiles = selfManaged ? files : externalFiles || []
   const displayLoading = selfManaged ? loading : externalLoading
   const displayError = selfManaged ? error : externalError
@@ -163,6 +182,14 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
                 <span>{formatFileSize(file.fileSize)}</span>
                 <span>•</span>
                 <span>{formatDate(file.createdAt)}</span>
+                <span>•</span>
+                <span>{getTypeLabel(file)}</span>
+                {file.mimeType && (
+                  <>
+                    <span>•</span>
+                    <span className="mono">{file.mimeType}</span>
+                  </>
+                )}
                 {file.shareable && (
                   <>
                     <span>•</span>

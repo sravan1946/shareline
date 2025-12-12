@@ -121,6 +121,12 @@
   flex-wrap: wrap;
 }
 
+.file-meta .mono {
+  font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .shared-badge {
   color: #c4b5fd;
   font-weight: 600;
