@@ -17,13 +17,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.net.URLConnection;
+
+import org.apache.tika.Tika;
 
 @Service
 public class FileService {
 
     private final FileRepository fileRepository;
     private final FileStorageService fileStorageService;
+    private final Tika tika = new Tika();
 
     public FileService(FileRepository fileRepository, FileStorageService fileStorageService) {
         this.fileRepository = fileRepository;
@@ -121,16 +123,25 @@ public class FileService {
         }
 
         try {
+            // Prefer content sniffing over filename; Tika inspects the file bytes.
+            String detected = tika.detect(Files.newInputStream(filePath));
+            if (detected != null && !detected.isBlank() && !detected.equals("application/octet-stream")) {
+                return detected;
+            }
+        } catch (IOException ignored) {
+            // continue to fallback
+        }
+
+        try {
             String probed = Files.probeContentType(filePath);
             if (probed != null && !probed.isBlank()) {
                 return probed;
             }
         } catch (IOException ignored) {
-            // fall through to next strategy
+            // continue to final fallback
         }
 
-        String guessed = URLConnection.guessContentTypeFromName(multipartFile.getOriginalFilename());
-        return (guessed != null && !guessed.isBlank()) ? guessed : "application/octet-stream";
+        return "application/octet-stream";
     }
 }
 
