@@ -1,57 +1,60 @@
-.file-shell {
+.file-page {
   background: var(--panel-strong);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 22px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  padding: 20px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.file-header {
+.file-top {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  align-items: center;
 }
 
-.file-header-text h2 {
-  margin: 4px 0 6px 0;
+.file-top h2 {
+  margin: 6px 0 4px;
 }
 
-.file-header-text .subdued {
-  color: var(--muted);
+.file-top .muted {
   margin: 0;
+  color: var(--muted);
 }
 
-.file-header-actions {
+.file-top-actions {
   display: flex;
   gap: 8px;
 }
 
-.file-controls {
+.file-toolbar {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: minmax(240px, 1fr) 1fr;
   gap: 12px;
+  align-items: stretch;
 }
 
-.control {
+.field {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.control-label {
+.field-label {
   font-size: 12px;
   color: var(--muted);
-  margin-bottom: 8px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.control.search input {
+.field input {
   width: 100%;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border);
@@ -62,83 +65,103 @@
   outline: none;
 }
 
-.control.search input:focus {
+.field input:focus {
   border-color: rgba(124, 58, 237, 0.6);
   box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
 }
 
-.control.stats {
+.stat-bar {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 10px;
 }
 
-.stat-card {
+.stat {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .stat-label {
-  display: block;
   color: var(--muted);
   font-size: 12px;
-  text-transform: uppercase;
   letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.stat-card strong {
-  display: block;
-  font-size: 20px;
-  margin-top: 6px;
+.stat-value {
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text);
 }
 
-.file-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 12px;
-}
-
-.file-card {
-  background: rgba(255, 255, 255, 0.03);
+.file-table {
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.file-table-head {
+  display: grid;
+  grid-template-columns: 2fr 1fr 0.8fr 1fr 1.3fr;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+
+.file-table-body {
   display: flex;
   flex-direction: column;
+}
+
+.file-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 0.8fr 1fr 1.3fr;
+  align-items: center;
   gap: 12px;
-  transition: all 0.18s ease;
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.file-card:hover {
-  border-color: rgba(124, 58, 237, 0.5);
-  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.28);
-  transform: translateY(-1px);
+.file-row:last-child {
+  border-bottom: none;
 }
 
-.file-card-head {
+.file-name-cell {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
+  min-width: 0;
 }
 
 .file-avatar {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(79, 70, 229, 0.22));
-  border: 1px solid rgba(124, 58, 237, 0.45);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.18), rgba(79, 70, 229, 0.18));
+  border: 1px solid rgba(124, 58, 237, 0.4);
   color: #e0e7ff;
   display: grid;
   place-items: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 0.02em;
 }
 
-.file-card-title {
+.file-name-stack {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -146,8 +169,8 @@
 }
 
 .file-name {
-  font-weight: 600;
   margin: 0;
+  font-weight: 600;
   color: var(--text);
   word-break: break-word;
 }
@@ -173,33 +196,14 @@
   background: rgba(124, 58, 237, 0.12);
 }
 
-.file-card-meta {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px;
-}
-
-.meta-label {
-  display: block;
-  color: var(--muted);
-  font-size: 12px;
-  margin-bottom: 2px;
-}
-
-.meta-value {
+.file-type,
+.file-size,
+.file-date {
   color: var(--text);
-  font-weight: 600;
   font-size: 14px;
-  word-break: break-word;
 }
 
-.meta-value.mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.file-card-actions {
+.file-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -209,20 +213,17 @@
 .chip-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 8px 12px;
   border-radius: 10px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.04);
   color: var(--text);
   transition: all 0.15s ease;
-}
-
-.chip-btn .icon {
-  font-size: 15px;
 }
 
 .chip-btn.solid {
@@ -266,6 +267,10 @@
   font-size: 13px;
 }
 
+.actions-col {
+  text-align: right;
+}
+
 .file-list-loading,
 .file-list-empty {
   text-align: center;
@@ -282,13 +287,45 @@
   text-align: center;
 }
 
-@media (max-width: 900px) {
-  .file-controls {
+@media (max-width: 1024px) {
+  .file-toolbar {
     grid-template-columns: 1fr;
   }
 
-  .file-header {
+  .file-table-head,
+  .file-row {
+    grid-template-columns: 1.6fr 1fr 0.9fr 1fr;
+  }
+
+  .actions-col {
+    display: none;
+  }
+
+  .file-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .file-top {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .file-table-head,
+  .file-row {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 10px;
+  }
+
+  .file-type,
+  .file-size,
+  .file-date {
+    font-size: 13px;
+  }
+
+  .file-actions {
+    grid-column: 1 / -1;
   }
 }

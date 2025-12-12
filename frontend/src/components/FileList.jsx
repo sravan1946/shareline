@@ -63,7 +63,7 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
   }
 
   const formatDate = (dateString) => {
@@ -137,114 +137,107 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
   }
 
   return (
-    <div className="file-shell">
-      <div className="file-header">
-        <div className="file-header-text">
+    <div className="file-page">
+      <div className="file-top">
+        <div className="file-top-text">
           <p className="eyebrow">Library</p>
           <h2>Your uploads</h2>
-          <p className="subdued">Browse, preview, and share everything in one place.</p>
+          <p className="muted">Browse, preview, and share everything in one place.</p>
         </div>
-        <div className="file-header-actions">
+        <div className="file-top-actions">
           <button className="ghost-button" onClick={onRefresh || loadFiles}>
             Refresh
           </button>
         </div>
       </div>
 
-      <div className="file-controls">
-        <div className="control search">
-          <div className="control-label">Search</div>
+      <div className="file-toolbar">
+        <label className="field">
+          <span className="field-label">Search</span>
           <input
             type="text"
             placeholder="Find by name..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-        </div>
-        <div className="control stats">
-          <div className="stat-card">
+        </label>
+        <div className="stat-bar">
+          <div className="stat">
             <span className="stat-label">Files</span>
-            <strong>{stats.count}</strong>
+            <span className="stat-value">{stats.count}</span>
           </div>
-          <div className="stat-card">
+          <div className="stat">
             <span className="stat-label">Storage</span>
-            <strong>{stats.sizeLabel}</strong>
+            <span className="stat-value">{stats.sizeLabel}</span>
           </div>
-          <div className="stat-card">
+          <div className="stat">
             <span className="stat-label">Shared</span>
-            <strong>{stats.shared}</strong>
+            <span className="stat-value">{stats.shared}</span>
           </div>
         </div>
       </div>
 
-      <div className="file-grid">
-        {filteredFiles.map((file) => (
-          <div key={file.id} className="file-card">
-            <div className="file-card-head">
-              <div className="file-avatar">{getExtension(file.originalFilename) || 'FILE'}</div>
-              <div className="file-card-title">
-                <div className="file-name">{file.originalFilename}</div>
-                <div className="file-badges">
-                  <span className="badge">{getTypeLabel(file)}</span>
-                  {file.shareable && <span className="badge accent">Shared</span>}
+      <div className="file-table">
+        <div className="file-table-head">
+          <span>Name</span>
+          <span>Type</span>
+          <span>Size</span>
+          <span>Added</span>
+          <span className="actions-col">Actions</span>
+        </div>
+        <div className="file-table-body">
+          {filteredFiles.map((file) => (
+            <div key={file.id} className="file-row">
+              <div className="file-name-cell">
+                <div className="file-avatar">{getExtension(file.originalFilename) || 'FILE'}</div>
+                <div className="file-name-stack">
+                  <div className="file-name">{file.originalFilename}</div>
+                  <div className="file-badges">
+                    <span className="badge">{getTypeLabel(file)}</span>
+                    {file.shareable && <span className="badge accent">Shared</span>}
+                  </div>
+                </div>
+              </div>
+              <div className="file-type">{file.mimeType || 'Unknown'}</div>
+              <div className="file-size">{formatFileSize(file.fileSize)}</div>
+              <div className="file-date">{formatDate(file.createdAt)}</div>
+              <div className="file-actions">
+                <button className="chip-btn ghost" onClick={() => setPreviewFile(file)}>
+                  Preview
+                </button>
+                <button className="chip-btn solid" onClick={() => handleDownload(file.id, file.originalFilename)}>
+                  Download
+                </button>
+                <button className="chip-btn ghost" onClick={() => onShare(file)}>
+                  Share
+                </button>
+                <div className="delete-wrap">
+                  <button
+                    onClick={() => handleDelete(file.id)}
+                    className={`chip-btn danger ${pendingDelete === file.id ? 'confirm' : ''}`}
+                    title={pendingDelete === file.id ? 'Click again to confirm' : 'Delete'}
+                  >
+                    {pendingDelete === file.id ? 'Confirm' : 'Delete'}
+                  </button>
+                  {pendingDelete === file.id && (
+                    <button className="text-cancel" onClick={() => setPendingDelete(null)}>
+                      Cancel
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
+          ))}
 
-            <div className="file-card-meta">
-              <div>
-                <span className="meta-label">Size</span>
-                <span className="meta-value">{formatFileSize(file.fileSize)}</span>
-              </div>
-              <div>
-                <span className="meta-label">Added</span>
-                <span className="meta-value">{formatDate(file.createdAt)}</span>
-              </div>
-              <div>
-                <span className="meta-label">MIME</span>
-                <span className="meta-value mono">{file.mimeType || 'Unknown'}</span>
-              </div>
+          {filteredFiles.length === 0 && (
+            <div className="file-list-empty">
+              <p>No files match that search.</p>
             </div>
-
-            <div className="file-card-actions">
-              <button className="chip-btn ghost" onClick={() => setPreviewFile(file)}>
-                <span className="icon">👁</span> Preview
-              </button>
-              <button className="chip-btn solid" onClick={() => handleDownload(file.id, file.originalFilename)}>
-                <span className="icon">⬇</span> Download
-              </button>
-              <button className="chip-btn ghost" onClick={() => onShare(file)}>
-                <span className="icon">🔗</span> Share
-              </button>
-              <div className="delete-wrap">
-                <button
-                  onClick={() => handleDelete(file.id)}
-                  className={`chip-btn danger ${pendingDelete === file.id ? 'confirm' : ''}`}
-                  title={pendingDelete === file.id ? 'Click again to confirm' : 'Delete'}
-                >
-                  <span className="icon">🗑</span>
-                  {pendingDelete === file.id ? 'Confirm' : 'Delete'}
-                </button>
-                {pendingDelete === file.id && (
-                  <button className="text-cancel" onClick={() => setPendingDelete(null)}>
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {filteredFiles.length === 0 && (
-          <div className="file-list-empty">
-            <p>No files match that search.</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {previewFile && (
-        <FilePreview file={previewFile} onClose={() => setPreviewFile(null)} />
-      )}
+      {previewFile && <FilePreview file={previewFile} onClose={() => setPreviewFile(null)} />}
     </div>
   )
 }
