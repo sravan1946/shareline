@@ -58,7 +58,7 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
     }
   }
 
-  const formatFileSize = (bytes) => {
+  const formatFileSize = (bytes = 0) => {
     if (bytes === 0) return '0 Bytes'
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
@@ -79,7 +79,7 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
   const getExtension = (name = '') => {
     const lastDot = name.lastIndexOf('.')
     if (lastDot === -1) return ''
-    return name.slice(lastDot + 1).toLowerCase()
+    return name.slice(lastDot + 1).toUpperCase()
   }
 
   const getTypeLabel = (file) => {
@@ -137,87 +137,83 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
   }
 
   return (
-    <div className="file-list-container">
-      <div className="file-list-top">
-        <div>
-          <p className="eyebrow">Your files</p>
-          <h2>Manage and share</h2>
+    <div className="file-shell">
+      <div className="file-header">
+        <div className="file-header-text">
+          <p className="eyebrow">Library</p>
+          <h2>Your uploads</h2>
+          <p className="subdued">Browse, preview, and share everything in one place.</p>
         </div>
-        <div className="top-actions">
+        <div className="file-header-actions">
           <button className="ghost-button" onClick={onRefresh || loadFiles}>
             Refresh
           </button>
         </div>
       </div>
 
-      <div className="file-stats">
-        <div className="stat-chip">
-          <span className="stat-chip-label">Files</span>
-          <strong>{stats.count}</strong>
-        </div>
-        <div className="stat-chip">
-          <span className="stat-chip-label">Storage</span>
-          <strong>{stats.sizeLabel}</strong>
-        </div>
-        <div className="stat-chip">
-          <span className="stat-chip-label">Shared</span>
-          <strong>{stats.shared}</strong>
-        </div>
-        <div className="search-box">
+      <div className="file-controls">
+        <div className="control search">
+          <div className="control-label">Search</div>
           <input
             type="text"
-            placeholder="Search filename..."
+            placeholder="Find by name..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
+        <div className="control stats">
+          <div className="stat-card">
+            <span className="stat-label">Files</span>
+            <strong>{stats.count}</strong>
+          </div>
+          <div className="stat-card">
+            <span className="stat-label">Storage</span>
+            <strong>{stats.sizeLabel}</strong>
+          </div>
+          <div className="stat-card">
+            <span className="stat-label">Shared</span>
+            <strong>{stats.shared}</strong>
+          </div>
+        </div>
       </div>
 
-      <div className="file-list">
+      <div className="file-grid">
         {filteredFiles.map((file) => (
-          <div key={file.id} className="file-item">
-            <div className="file-info">
-              <div className="file-name">{file.originalFilename}</div>
-              <div className="file-meta">
-                <span>{formatFileSize(file.fileSize)}</span>
-                <span>•</span>
-                <span>{formatDate(file.createdAt)}</span>
-                <span>•</span>
-                <span>{getTypeLabel(file)}</span>
-                {file.mimeType && (
-                  <>
-                    <span>•</span>
-                    <span className="mono">{file.mimeType}</span>
-                  </>
-                )}
-                {file.shareable && (
-                  <>
-                    <span>•</span>
-                    <span className="shared-badge">Shared</span>
-                  </>
-                )}
+          <div key={file.id} className="file-card">
+            <div className="file-card-head">
+              <div className="file-avatar">{getExtension(file.originalFilename) || 'FILE'}</div>
+              <div className="file-card-title">
+                <div className="file-name">{file.originalFilename}</div>
+                <div className="file-badges">
+                  <span className="badge">{getTypeLabel(file)}</span>
+                  {file.shareable && <span className="badge accent">Shared</span>}
+                </div>
               </div>
             </div>
-            <div className="file-actions">
-              <button
-                onClick={() => setPreviewFile(file)}
-                className="chip-btn ghost"
-                title="Preview"
-              >
+
+            <div className="file-card-meta">
+              <div>
+                <span className="meta-label">Size</span>
+                <span className="meta-value">{formatFileSize(file.fileSize)}</span>
+              </div>
+              <div>
+                <span className="meta-label">Added</span>
+                <span className="meta-value">{formatDate(file.createdAt)}</span>
+              </div>
+              <div>
+                <span className="meta-label">MIME</span>
+                <span className="meta-value mono">{file.mimeType || 'Unknown'}</span>
+              </div>
+            </div>
+
+            <div className="file-card-actions">
+              <button className="chip-btn ghost" onClick={() => setPreviewFile(file)}>
                 <span className="icon">👁</span> Preview
               </button>
-              <button
-                onClick={() => handleDownload(file.id, file.originalFilename)}
-                className="chip-btn solid"
-                title="Download"
-              >
+              <button className="chip-btn solid" onClick={() => handleDownload(file.id, file.originalFilename)}>
                 <span className="icon">⬇</span> Download
               </button>
-              <button
-                onClick={() => onShare(file)}
-                className="chip-btn ghost"
-                title="Share"
-              >
+              <button className="chip-btn ghost" onClick={() => onShare(file)}>
                 <span className="icon">🔗</span> Share
               </button>
               <div className="delete-wrap">
@@ -238,12 +234,14 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
             </div>
           </div>
         ))}
+
         {filteredFiles.length === 0 && (
           <div className="file-list-empty">
             <p>No files match that search.</p>
           </div>
         )}
       </div>
+
       {previewFile && (
         <FilePreview file={previewFile} onClose={() => setPreviewFile(null)} />
       )}
