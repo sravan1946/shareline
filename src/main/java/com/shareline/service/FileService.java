@@ -117,28 +117,14 @@ public class FileService {
      * Falls back to application/octet-stream.
      */
     private String determineMimeType(MultipartFile multipartFile, Path filePath) {
-        String clientType = multipartFile.getContentType();
-        if (clientType != null && !clientType.isBlank()) {
-            return clientType;
-        }
-
-        try {
-            // Prefer content sniffing over filename; Tika inspects the file bytes.
-            String detected = tika.detect(Files.newInputStream(filePath));
+        // Content-based detection only; avoid filename hints.
+        try (var is = Files.newInputStream(filePath)) {
+            String detected = tika.detect(is);
             if (detected != null && !detected.isBlank() && !detected.equals("application/octet-stream")) {
                 return detected;
             }
         } catch (IOException ignored) {
-            // continue to fallback
-        }
-
-        try {
-            String probed = Files.probeContentType(filePath);
-            if (probed != null && !probed.isBlank()) {
-                return probed;
-            }
-        } catch (IOException ignored) {
-            // continue to final fallback
+            // fall through
         }
 
         return "application/octet-stream";
