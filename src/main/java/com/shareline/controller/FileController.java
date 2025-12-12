@@ -18,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/files")
@@ -61,6 +60,21 @@ public class FileController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.getMimeType() != null ? file.getMimeType() : "application/octet-stream"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getOriginalFilename() + "\"")
+                .body(resource);
+    }
+
+    @GetMapping("/{id}/preview")
+    public ResponseEntity<Resource> previewFile(
+            @PathVariable Long id,
+            @AuthenticationPrincipal OAuth2User principal) throws IOException {
+        
+        User user = getCurrentUser(principal);
+        File file = fileService.getFileByIdAndUser(id, user);
+        Resource resource = fileService.loadFileAsResource(file);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(file.getMimeType() != null ? file.getMimeType() : "application/octet-stream"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getOriginalFilename() + "\"")
                 .body(resource);
     }
 

@@ -60,6 +60,10 @@ export const downloadFile = async (id, filename) => {
   link.remove()
 }
 
+export const getPreviewUrl = (id) => {
+  return `${API_BASE_URL}/files/${id}/preview`
+}
+
 export const createShareLink = async (fileId, expirationDays = null) => {
   const response = await api.post(`/files/${fileId}/share`, {
     expirationDays,

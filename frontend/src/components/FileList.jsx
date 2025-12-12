@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { getFiles, deleteFile, downloadFile } from '../services/api'
+import FilePreview from './FilePreview'
 import './FileList.css'
 
 function FileList({ user, onShare, files: externalFiles, loading: externalLoading, error: externalError, onRefresh }) {
@@ -9,6 +10,7 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
   const selfManaged = externalFiles === undefined
   const [query, setQuery] = useState('')
   const [pendingDelete, setPendingDelete] = useState(null)
+  const [previewFile, setPreviewFile] = useState(null)
 
   useEffect(() => {
     if (selfManaged) {
@@ -171,6 +173,13 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
             </div>
             <div className="file-actions">
               <button
+                onClick={() => setPreviewFile(file)}
+                className="chip-btn ghost"
+                title="Preview"
+              >
+                <span className="icon">👁</span> Preview
+              </button>
+              <button
                 onClick={() => handleDownload(file.id, file.originalFilename)}
                 className="chip-btn solid"
                 title="Download"
@@ -208,6 +217,9 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
           </div>
         )}
       </div>
+      {previewFile && (
+        <FilePreview file={previewFile} onClose={() => setPreviewFile(null)} />
+      )}
     </div>
   )
 }
