@@ -19,8 +19,10 @@ services:
       - shareline-network
 
   app:
-    # Production: uses image from GitHub Container Registry
-    image: ghcr.io/sravan1946/shareline:latest
+    # Local development: builds from Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: shareline-app
     ports:
       - "8080:8080"
@@ -48,3 +50,4 @@ volumes:
 networks:
   shareline-network:
     driver: bridge
+

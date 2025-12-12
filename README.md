@@ -24,6 +24,7 @@ A full-stack file upload and sharing application built with Spring Boot and Reac
 
 - Docker and Docker Compose installed
 - Google OAuth2 credentials (Client ID and Client Secret)
+- GitHub repository (for CI/CD deployment)
 
 ## Setup Instructions
 
@@ -54,12 +55,22 @@ POSTGRES_PASSWORD=your-secure-password
 
 ### 3. Build and Run with Docker Compose
 
+**For Production (uses pre-built image from GitHub Container Registry):**
+```bash
+# Start all services
+docker-compose up -d
+
+# Or pull latest and start
+docker-compose pull && docker-compose up -d
+```
+
+**For Local Development (builds from Dockerfile):**
 ```bash
 # Build and start all services
-docker-compose up --build
+docker-compose -f docker-compose.dev.yml up --build
 
 # Or run in detached mode
-docker-compose up -d --build
+docker-compose -f docker-compose.dev.yml up -d --build
 ```
 
 The application will be available at `http://localhost:8080`
@@ -105,7 +116,8 @@ shareline/
 ├── frontend/            # React application
 ├── pom.xml             # Maven configuration
 ├── Dockerfile          # Docker build instructions
-└── docker-compose.yml  # Docker Compose configuration
+├── docker-compose.yml  # Docker Compose configuration (production)
+└── docker-compose.dev.yml  # Docker Compose configuration (local development)
 ```
 
 ## Development
@@ -186,6 +198,54 @@ In Docker, the application connects to PostgreSQL using the service name `postgr
 - Check file size (max 100MB)
 - Verify upload directory has write permissions
 - Check application logs: `docker-compose logs app`
+
+## CI/CD Deployment
+
+This project includes a GitHub Actions workflow for automatic deployment to a VPS.
+
+### Setup
+
+1. **Configure GitHub Secrets**:
+   - Go to your repository → Settings → Secrets and variables → Actions
+   - Add the following required secrets:
+     - `VPS_HOST`: Your VPS hostname or IP address
+     - `VPS_USER`: SSH username for your VPS
+     - `VPS_SSH_KEY`: Private SSH key for VPS authentication
+   - Optional secret:
+     - `VPS_DEPLOY_PATH`: Custom deployment directory path (defaults to `~/shareline`)
+
+2. **Prepare docker-compose.yml**:
+   - The default `docker-compose.yml` is configured for production with image `ghcr.io/sravan1946/shareline:latest`
+   - Copy `docker-compose.yml` and `.env` to your VPS at `~/shareline/`
+
+3. **Prepare VPS**:
+   - Ensure Docker and Docker Compose are installed
+   - Create directory: `mkdir -p ~/shareline`
+   - Copy `docker-compose.yml` (production) and `.env` file to `~/shareline/` on your VPS
+   - The deployment path is set to `~/shareline/` (can be overridden with `VPS_DEPLOY_PATH` secret)
+
+4. **Deployment Flow**:
+   - Push to `main` branch triggers the workflow
+   - Workflow builds Docker image and pushes to GitHub Container Registry
+   - Workflow SSH into VPS, pulls latest image, and restarts the app service
+   - Database service remains running to preserve data
+
+### Manual Deployment
+
+**Production (default):**
+The default `docker-compose.yml` is configured for production and pulls from GitHub Container Registry:
+
+```bash
+docker-compose pull
+docker-compose up -d
+```
+
+**Local Development:**
+Use `docker-compose.dev.yml` which builds from the Dockerfile:
+
+```bash
+docker-compose -f docker-compose.dev.yml up --build -d
+```
 
 ## License
 
