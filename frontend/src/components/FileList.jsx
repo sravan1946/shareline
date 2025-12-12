@@ -9,7 +9,6 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
   const [error, setError] = useState(null)
   const selfManaged = externalFiles === undefined
   const [query, setQuery] = useState('')
-  const [pendingDelete, setPendingDelete] = useState(null)
   const [previewFile, setPreviewFile] = useState(null)
 
   useEffect(() => {
@@ -31,14 +30,11 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
     }
   }
 
-  const handleDelete = async (id) => {
-    if (pendingDelete !== id) {
-      setPendingDelete(id)
-      return
-    }
+  const handleDelete = async (id, name) => {
+    const confirmed = window.confirm(`Delete "${name}"? This cannot be undone.`)
+    if (!confirmed) return
     try {
       await deleteFile(id)
-      setPendingDelete(null)
       if (selfManaged) {
         loadFiles()
       } else if (onRefresh) {
@@ -46,7 +42,6 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
       }
     } catch (err) {
       setError('Failed to delete file')
-      setPendingDelete(null)
     }
   }
 
@@ -189,13 +184,10 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
           {filteredFiles.map((file) => (
             <div key={file.id} className="file-row">
               <div className="file-name-cell">
-                <div className="file-avatar">{getExtension(file.originalFilename) || 'FILE'}</div>
-                <div className="file-name-stack">
-                  <div className="file-name">{file.originalFilename}</div>
-                  <div className="file-badges">
-                    <span className="badge">{getTypeLabel(file)}</span>
-                    {file.shareable && <span className="badge accent">Shared</span>}
-                  </div>
+                <div className="file-name">{file.originalFilename}</div>
+                <div className="file-badges">
+                  <span className="badge">{getTypeLabel(file)}</span>
+                  {file.shareable && <span className="badge accent">Shared</span>}
                 </div>
               </div>
               <div className="file-type">{file.mimeType || 'Unknown'}</div>
@@ -211,20 +203,13 @@ function FileList({ user, onShare, files: externalFiles, loading: externalLoadin
                 <button className="chip-btn ghost" onClick={() => onShare(file)}>
                   Share
                 </button>
-                <div className="delete-wrap">
-                  <button
-                    onClick={() => handleDelete(file.id)}
-                    className={`chip-btn danger ${pendingDelete === file.id ? 'confirm' : ''}`}
-                    title={pendingDelete === file.id ? 'Click again to confirm' : 'Delete'}
-                  >
-                    {pendingDelete === file.id ? 'Confirm' : 'Delete'}
-                  </button>
-                  {pendingDelete === file.id && (
-                    <button className="text-cancel" onClick={() => setPendingDelete(null)}>
-                      Cancel
-                    </button>
-                  )}
-                </div>
+                <button
+                  onClick={() => handleDelete(file.id, file.originalFilename)}
+                  className="chip-btn danger"
+                  title="Delete this file"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           ))}

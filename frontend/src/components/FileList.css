@@ -140,28 +140,6 @@
 }
 
 .file-name-cell {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 10px;
-  align-items: center;
-  min-width: 0;
-}
-
-.file-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.18), rgba(79, 70, 229, 0.18));
-  border: 1px solid rgba(124, 58, 237, 0.4);
-  color: #e0e7ff;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.02em;
-}
-
-.file-name-stack {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -215,7 +193,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: 10px;
   font-weight: 600;
   font-size: 13px;
@@ -226,11 +204,15 @@
   transition: all 0.15s ease;
 }
 
+.file-actions .chip-btn {
+  min-width: 92px;
+}
+
 .chip-btn.solid {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: white;
-  border: none;
-  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.25);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.18), rgba(79, 70, 229, 0.24));
+  color: #e4ddff;
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 10px 22px rgba(99, 102, 241, 0.15);
 }
 
 .chip-btn.ghost:hover {
@@ -239,32 +221,13 @@
 }
 
 .chip-btn.danger {
-  border-color: rgba(239, 68, 68, 0.4);
+  border-color: rgba(239, 68, 68, 0.45);
   color: #fecdd3;
-}
-
-.chip-btn.danger.confirm {
-  background: rgba(239, 68, 68, 0.16);
-  border-color: rgba(239, 68, 68, 0.6);
-  color: #fecdd3;
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .chip-btn:hover {
   transform: translateY(-1px);
-}
-
-.delete-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.text-cancel {
-  background: none;
-  border: none;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 13px;
 }
 
 .actions-col {

@@ -38,6 +38,19 @@ export const uploadFile = async (file) => {
   return response.data
 }
 
+export const uploadFileWithProgress = async (file, { onProgress, signal } = {}) => {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await api.post('/files/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    signal,
+    onUploadProgress: onProgress,
+  })
+
+  return response.data
+}
+
 export const getFiles = async () => {
   const response = await api.get('/files')
   return response.data
